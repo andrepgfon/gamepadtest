@@ -6,10 +6,10 @@
  *
  * You should have received a copy of the CC0 Public Domain Dedication along with this software. If not, see <http://creativecommons.org/publicdomain/zero/1.0/>.
  */
-var haveEvents = 'GamepadEvent' in window;
-var haveWebkitEvents = 'WebKitGamepadEvent' in window;
-var controllers = {};
-var rAF = window.mozRequestAnimationFrame ||
+let haveEvents = 'GamepadEvent' in window;
+let haveWebkitEvents = 'WebKitGamepadEvent' in window;
+let controllers = {};
+let rAF = window.mozRequestAnimationFrame ||
   window.webkitRequestAnimationFrame ||
   window.requestAnimationFrame;
 
@@ -17,22 +17,23 @@ function connecthandler(e) {
   addgamepad(e.gamepad);
 }
 function addgamepad(gamepad) {
-  controllers[gamepad.index] = gamepad; var d = document.createElement("div");
+  controllers[gamepad.index] = gamepad; let d = document.createElement("div");
   d.setAttribute("id", "controller" + gamepad.index);
-  var t = document.createElement("h1");
-  t.appendChild(document.createTextNode("gamepad: " + gamepad.id));
+  let t = document.createElement("h1");
+  t.appendChild(document.createTextNode("Nome do Controle: " + gamepad.id));
   d.appendChild(t);
-  var b = document.createElement("div");
+  let b = document.createElement("div");
   b.className = "buttons";
-  for (var i=0; i<gamepad.buttons.length; i++) {
-    var e = document.createElement("span");
+  for (let i=0; i<gamepad.buttons.length; i++) {
+    let e = document.createElement("span");
     e.className = "button";
     //e.id = "b" + i;
     e.innerHTML = i;
+    e.style.marginRight = "5px";
     b.appendChild(e);
   }
   d.appendChild(b);
-  var a = document.createElement("div");
+  let a = document.createElement("div");
   a.className = "axes";
   for (i=0; i<gamepad.axes.length; i++) {
     e = document.createElement("meter");
@@ -41,7 +42,7 @@ function addgamepad(gamepad) {
     e.setAttribute("min", "-1");
     e.setAttribute("max", "1");
     e.setAttribute("value", "0");
-    e.innerHTML = i;
+    e.innerHTML = "Analógico";
     a.appendChild(e);
   }
   d.appendChild(a);
@@ -55,7 +56,7 @@ function disconnecthandler(e) {
 }
 
 function removegamepad(gamepad) {
-  var d = document.getElementById("controller" + gamepad.index);
+  let d = document.getElementById("controller" + gamepad.index);
   document.body.removeChild(d);
   delete controllers[gamepad.index];
 }
@@ -63,29 +64,30 @@ function removegamepad(gamepad) {
 function updateStatus() {
   scangamepads();
   for (j in controllers) {
-    var controller = controllers[j];
-    var d = document.getElementById("controller" + j);
-    var buttons = d.getElementsByClassName("button");
-    for (var i=0; i<controller.buttons.length; i++) {
-      var b = buttons[i];
-      var val = controller.buttons[i];
-      var pressed = val == 1.0;
+    let controller = controllers[j];
+    let d = document.getElementById("controller" + j);
+    let buttons = d.getElementsByClassName("button");
+    for (let i=0; i<controller.buttons.length; i++) {
+      let b = buttons[i];
+      let val = controller.buttons[i];
+      let pressed = val == 1.0;
       if (typeof(val) == "object") {
         pressed = val.pressed;
         val = val.value;
       }
-      var pct = Math.round(val * 100) + "%";
+      let pct = Math.round(val * 100) + "%";
       b.style.backgroundSize = pct + " " + pct;
       if (pressed) {
         b.className = "button pressed";
+        isKonami(controller.buttons[i]);
       } else {
         b.className = "button";
       }
     }
 
-    var axes = d.getElementsByClassName("axis");
-    for (var i=0; i<controller.axes.length; i++) {
-      var a = axes[i];
+    let axes = d.getElementsByClassName("axis");
+    for (let i=0; i<controller.axes.length; i++) {
+      let a = axes[i];
       a.innerHTML = i + ": " + controller.axes[i].toFixed(4);
       a.setAttribute("value", controller.axes[i]);
     }
@@ -94,8 +96,8 @@ function updateStatus() {
 }
 
 function scangamepads() {
-  var gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
-  for (var i = 0; i < gamepads.length; i++) {
+  let gamepads = navigator.getGamepads ? navigator.getGamepads() : (navigator.webkitGetGamepads ? navigator.webkitGetGamepads() : []);
+  for (let i = 0; i < gamepads.length; i++) {
     if (gamepads[i]) {
       if (!(gamepads[i].index in controllers)) {
         addgamepad(gamepads[i]);
@@ -114,4 +116,26 @@ if (haveEvents) {
   window.addEventListener("webkitgamepaddisconnected", disconnecthandler);
 } else {
   setInterval(scangamepads, 500);
+}
+
+// KonamiCode pq me deu vontade
+let konamiCodePosition = 0;
+function isKonami(key){
+  c = controllers[0];
+  let konamiCode = [c.buttons[12], c.buttons[12], c.buttons[13], c.buttons[13], c.buttons[14], c.buttons[15], c.buttons[14], c.buttons[15], c.buttons[1], c.buttons[0]];
+  let requiredKey = konamiCode[konamiCodePosition];
+  if (key == requiredKey) {
+    konamiCodePosition++;
+    if (konamiCodePosition == konamiCode.length) {
+      activateCheats();
+      konamiCodePosition = 0;
+    }
+  } else {
+    konamiCodePosition = 0;
+  }
+}
+
+function activateCheats() {
+  document.body.style.backgroundImage = "url('konamicode.png')";
+  alert("cheats activated");
 }
