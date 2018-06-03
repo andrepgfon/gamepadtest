@@ -136,6 +136,6 @@ function isKonami(key){
 }
 
 function activateCheats() {
-  document.body.style.backgroundImage = "url('konamicode.png')";
+  document.body.style.backgroundImage = "url('images/konamicode.png')";
   alert("cheats activated");
 }
