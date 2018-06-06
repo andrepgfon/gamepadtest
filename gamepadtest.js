@@ -61,6 +61,7 @@ function removegamepad(gamepad) {
   delete controllers[gamepad.index];
 }
 
+let timestamp = 0;
 function updateStatus() {
   scangamepads();
   for (j in controllers) {
@@ -78,8 +79,13 @@ function updateStatus() {
       let pct = Math.round(val * 100) + "%";
       b.style.backgroundSize = pct + " " + pct;
       if (pressed) {
+        console.log(timestamp + ',' + controller.timestamp);
         b.className = "button pressed";
-        isKonami(controller.buttons[i]);
+        if(controller.timestamp - timestamp > 10){
+          console.log("ola");
+          isKonami(controller.buttons[i]);
+        }
+        timestamp = controller.timestamp;
       } else {
         b.className = "button";
       }
@@ -137,5 +143,7 @@ function isKonami(key){
 
 function activateCheats() {
   document.body.style.backgroundImage = "url('images/konamicode.png')";
+  var audio = new Audio('sound/ls.mp3');
+  audio.play();
   alert("cheats activated");
 }
